@@ -1,6 +1,8 @@
 - name: Configuring catalogue
   hosts: catalogue
   become: yes
+  vars:
+   MONGODB_HOST: "mongodb.rakesh.bond"
   tasks:
   - name: Disabling default Nodejs version
     ansible.builtin.command: dnf module disable nodejs -y
@@ -56,3 +58,23 @@
       name: catalogue
       state: started
       enabled: true
+
+  - name: Copying mongo repo
+    ansible.builtin.copy:
+     src: mongo.repo
+     dest: /etc/yum.repos.d/mongo.repo
+  
+  - name: Install mongodb
+    ansible.builtin.package:
+      name: mongodb-mongosh
+      state: present
+  
+  - name: Check data loaded or not
+    ansible.builtin.command: mongosh --host "{{ MONGODB_HOST }}" --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
+    register: catalogue_output
+
+  - name: Printing output
+    ansible.builtin.debug:
+     msg: "{{ catalogue_output }}" 
+
+    #mongosh --host  </app/db/master-data.js
