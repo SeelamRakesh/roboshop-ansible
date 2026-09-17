@@ -77,5 +77,7 @@
   - name: Printing output
     ansible.builtin.debug:
      msg: "{{ catalogue_output }}" 
-
-    #mongosh --host  </app/db/master-data.js
+  
+  - name: Load Master data
+    ansible.builtin.shell: mongosh --host {{ mongodb_host }} </app/db/master-data.js
+    when: catalogue_output.rc != 0
