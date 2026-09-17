@@ -33,7 +33,7 @@
       url: https://roboshop-artifacts.s3.amazonaws.com/catalogue-v3.zip
       dest: /tmp/catalogue.zip
   
-  - name: Extract foo.tgz into /var/lib/foo
+  - name: Extract catalogue code
     ansible.builtin.unarchive:
       src: /tmp/catalogue.zip
       dest: /app
@@ -72,6 +72,7 @@
   - name: Check data loaded or not
     ansible.builtin.command: mongosh --host "{{ MONGODB_HOST }}" --quiet  --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
     register: catalogue_output
+    ignore_errors: true
 
   - name: Printing output
     ansible.builtin.debug:
