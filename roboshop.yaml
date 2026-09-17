@@ -1,89 +1,24 @@
-- name: Creating EC2 Instances and R53 records
+- name: Create EC2 instance and Route53 record
   hosts: all
   connection: local
-  vars:
-   sg_id: sg-0978bd3e9e6d67ee8
-   ami_id: ami-0220d79f3f480ecf5
-   domain_name: rakesh.bond
+  vars: 
+   sg_id: "sg-0e17db6ab1dfaa76a"
+   ami_id: "ami-0220d79f3f480ecf5"
    env: dev
-   action: create
    instances:
     - mongodb
     - catalogue
-    - redis
-    - user
-    - cart
-    - mysql
-    - shipping
-    - payment
-    - rabbitmq
     - frontend
   tasks:
-  - name: Create ec2 instance
+  - name: EC2 instance creation
     amazon.aws.ec2_instance:
-     name: "{{ item }}-{{ env }}"
-     security_group: "{{ sg_id }}"
-     image_id: "{{ ami_id }}"
-     instance_type: t3.micro
-     tags:
-      Project: roboshop 
-      Component: "{{ item }}"
-      Environment: "{{ env }}"
-      Name: "{{ item }}-{{ env }}"
-    loop: "{{ instances }}"
-    register: ec2_output
-    when: action == "create"
-
-  - name: print output
-    ansible.builtin.debug:
-     msg: "{{ ec2_output }}"
-    when: action == "create"
-
-  - name: create route 53 records
-    amazon.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "{{ item.item }}-{{ env }}.{{ domain_name }}" #mogodb-dev.rakesh.bondS
-      type: A
-      ttl: 1
-      value: "{{ item.instances[0].private_ip_address }}"
-      wait: false
-    loop: "{{ec2_output.results}}"
-    when: action == "create"
-
-  - name: create route 53 records
-    amazon.aws.route53:
-      state: present
-      zone: "{{ domain_name }}"
-      record: "roboshop-{{ env }}.{{ domain_name }}" #roboshop-dev.rakesh.bond
-      type: A
-      ttl: 1
-      value: "{{ item.instances[0].public_ip_address }}"
-      wait: false
-    loop: "{{ec2_output.results}}"
-    when: 
-    - item.item == "frontend"
-    - action == "create"
-  
-  - name: Delete route 53 records
-    amazon.aws.route53:
-     state: absent
-     zone: "{{ domain_name }}"
-     record: "{{ item }}-{{ env }}.{{ domain_name }}"
-     type: A
-     ttl: 1
-     wait: false
-    loop: "{{ instances }}"
-    when: action == "destroy"
-
-  - name: Delete ec2 instance
-    amazon.aws.ec2_instance:
-     name: "{{ item }}-{{ env }}"
-     state: absent
-     wait: false
-    loop: "{{ instances }}"
-    when: action == "destroy"
-
-
-
-    
+      name: "{{ item }}-{{ env }}" #mongodb-dev
+      instance_type: "t3.micro"
+      security_group: "{{ sg_id }}"
+      image_id: "{{ ami_id }}"
+      tags:
+       - Project: "roboshop"
+       - Component: "{{ item }}"
+       - Environment: "{{ env }}
+       - Name: "{{ item }}-{{ env }}"
+        
