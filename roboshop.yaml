@@ -59,7 +59,7 @@
       state: absent
       zone: "{{ domain }}"
       record: "{{ item }}-{{ env }}.{{ domain }}"
-      type: SSHFP
+      type: A
     loop: "{{ instances }}"
     when: 
     - action == "destroy"
