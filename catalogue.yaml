@@ -45,7 +45,7 @@
       state: present
   
   - name: Copying Catalogue service
-    ansible.builtin.copy:
+    ansible.builtin.template:
      src: catalogue.service
      dest: /etc/systemd/system/catalogue.service
   
@@ -80,8 +80,7 @@
   
   - name: Load Master data
     ansible.builtin.shell: mongosh --host "{{ MONGODB_HOST }}" </app/db/master-data.js
-    #when: catalogue_output.stdout | int < 0 
-    when: catalogue_output.rc == 0
+    when: catalogue_output.stdout | int < 0 
     
   - name: start catalogue
     ansible.builtin.service:
