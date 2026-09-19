@@ -58,9 +58,9 @@
     amazon.aws.route53:
       state: absent
       zone: "{{ domain }}"
-      record: "{{ item.item }}-{{ env }}.{{ domain }}"
+      record: "{{ item }}-{{ env }}.{{ domain }}"
       type: SSHFP
-    loop: "{{ ec2_output.results }}"
+    loop: "{{ instances }}"
     when: 
     - action == "destroy"
   
@@ -71,7 +71,7 @@
         record: "roboshop-{{ env }}.{{ domain }}" #roboshop-dev.rakesh.bond
         type: A
         ttl: 1
-      loop: "{{ ec2_output.results }}"
+      loop: "{{ instances }}"
       when: 
       - action == "destroy"
       - instances == "frontend"
