@@ -40,7 +40,7 @@
     loop: "{{ ec2_output.results }}"
     when: action == "create"
 
-  - name: Create Route 53 for public_ip
+  - name: Create Route 53 for frontend
     amazon.aws.route53:
       state: present
       zone: "{{ domain }}"
@@ -54,7 +54,7 @@
     - action == "create"
     - item.item == "frontend"
   
-  - name: Delete r53 record fro private_ip
+  - name: Delete r53 record for private_ip
     amazon.aws.route53:
       state: absent
       zone: "{{ domain }}"
@@ -64,9 +64,9 @@
     when: 
     - action == "destroy"
   
-    - name: Create Route 53 for public_ip
+    - name: Delete Route 53 for frontend
       amazon.aws.route53:
-        state: present
+        state: absent
         zone: "{{ domain }}"
         record: "roboshop-{{ env }}.{{ domain }}" #roboshop-dev.rakesh.bond
         type: A
