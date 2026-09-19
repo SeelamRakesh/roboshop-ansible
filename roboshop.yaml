@@ -5,6 +5,7 @@
    sg_id: "sg-0e17db6ab1dfaa76a"
    ami_id : "ami-0220d79f3f480ecf5"
    env: "dev"
+   domain: "rakesh.bond"
    action: "create"
    instances:
     - mongodb
@@ -23,4 +24,60 @@
        Component: "{{ item }}"
        Environment: "{{ env }}"
     loop: "{{ instances }}"
+    register: ec2_output
     when: action == "create"
+  
+  - name: Create Route 53 for private_ip
+    amazon.aws.route53:
+      state: present
+      zone: "{{ domain }}"
+      record: "{{ item.item }}-{{ env }}.{{ domain }}" #mongodb-dev.rakesh.bond
+      type: A
+      ttl: 1
+      value: "{{ item.instances[0].private_ip_address }}"
+      wait: true
+    loop: "{{ ec2_output.results }}"
+    when: action == "create"
+
+  - name: Create Route 53 for public_ip
+    amazon.aws.route53:
+      state: present
+      zone: "{{ domain }}"
+      record: "roboshop-{{ env }}.{{ domain }}" #roboshop-dev.rakesh.bond
+      type: A
+      ttl: 1
+      value: "{{ item.instances[0].public_ip_address }}"
+    loop: "{{ ec2_output.results }}"
+    when: 
+    - action == "create"
+    - instances == "frontend"
+  
+  - name: Delete r53 record fro private_ip
+    amazon.aws.route53:
+      state: absent
+      zone: "{{ domain }}"
+      record: "{{ item.item }}-{{ env }}.{{ domain }}"
+      type: SSHFP
+    loop: "{{ ec2_output.results }}"
+    when: 
+    - action == "destroy"
+  
+    - name: Create Route 53 for public_ip
+      amazon.aws.route53:
+        state: present
+        zone: "{{ domain }}"
+        record: "roboshop-{{ env }}.{{ domain }}" #roboshop-dev.rakesh.bond
+        type: A
+        ttl: 1
+      loop: "{{ ec2_output.results }}"
+      when: 
+      - action == "destroy"
+      - instances == "frontend"
+  
+  - name: Delete EC2 instance
+    amazon.aws.ec2_instance:
+     name: "{{ item }}-{{ env }}"
+     state: absent
+     wait: false
+    loop: "{{ instances }}"
+    when: action == "destroy"
