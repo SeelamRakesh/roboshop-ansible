@@ -14,11 +14,6 @@
     ansible.builtin.file:
       path: /usr/share/nginx/html/
       state: absent
-
-  - name: Delete app app directory
-    ansible.builtin.file:
-      path: /app
-      state: absent
   
   - name: Create HTML directory
     ansible.builtin.file:
