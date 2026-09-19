@@ -1,0 +1,26 @@
+- name: Creating EC2 Instances and R53
+  hosts: all
+  connection: local
+  vars: 
+   sg_id: "sg-0e17db6ab1dfaa76a"
+   ami_id : "ami-0220d79f3f480ecf5"
+   env: "dev"
+   action: "create"
+   instances:
+    - mongodb
+    - catalogue
+    - frontend
+  tasks:
+  - name: Create ec2-instance
+    amazon.aws.ec2_instance:
+      name: "{{ item }}-{{ dev }}"
+      instance_type: "t3.micro"
+      security_group: "{{ sg_id }}"
+      image_id: "{{ ami_id }}"
+      tags:
+       Project: "Roboshop"
+       name: "{{ item }}-{{ dev }}"
+       Component: "{{ item }}"
+       Environment: "{{ env }}"
+    loop: "{{ instances }}"
+    when: action == "create"
